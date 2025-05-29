@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Upload Device Excel</title>
+        <!-- Bootstrap & Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+        <style>
+            .navbar-custom {
+            background-color: #001f3f;
+            }
+            .navbar-custom .nav-link,
+            .navbar-custom .navbar-brand {
+            color: white;
+            }
+            .navbar-custom .nav-link:hover {
+            color: #ffdd57;
+            }
+            .btn-outline-success {
+            border-color: white;
+            color: white;
+            }
+            .btn-outline-success:hover {
+            background-color: white;
+            color: #001f3f;
+            }
+        </style>
+    </head>
+    <body class="bg-light">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bolder" href="{% url 'home' %}">
+                    <i class="bi bi-house-fill me-2"></i>Home
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold me-4" href="{% url 'dummy-data' %}">
+                                <i class="bi bi-filetype-json me-1"></i>JSON DATA
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold me-4" href="{% url 'import_devices' %}">
+                                <i class="bi bi-arrow-down-up me-1"></i>Import
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold me-4" href="{% url 'register_device' %}">
+                                <i class="bi bi-cloud-upload-fill me-1"></i>Devices Registration
+                            </a>
+                        </li>
+                        </ul>
+                    <form class="d-flex" role="search">
+                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
+                        <button class="btn btn-outline-success" type="submit">Search</button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+        <!-- Main Upload Section -->
+        <main class="container my-5">
+            <div class="p-5 bg-white rounded-4 shadow">
+                <h2 class="text-center fw-bold mb-4" style="color: #001f3f;">
+                    <i class="bi bi-upload me-2"></i>Upload Device Excel
+                </h2>
+                <form method="POST" enctype="multipart/form-data" class="mb-4">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                    <label for="excelFile" class="form-label fw-semibold">Choose Excel File</label>
+                    <input class="form-control" type="file" id="excelFile" name="excel_file" accept=".xlsx,.xls" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-upload me-1"></i>Upload
+                    </button>
+                </form>
+
+                {% if error_message %}
+                    <div class="alert alert-danger rounded-3" role="alert">
+                        <strong>Error:</strong> {{ error_message }}
+                    </div>
+                {% endif %}
+                {% if response_data %}
+                    <div class="alert alert-success rounded-3" role="alert">
+                        <strong>Success:</strong> {{ response_data|length }} devices registered.
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead class="table-primary text-center">
+                            <tr>
+                                <th>Serial Number</th>
+                                <th>MAC</th>
+                                <th>Firmware</th>
+                                <th>HW Name</th>
+                                <th>HW Version</th>
+                                <th>Mgmt IP</th>
+                                <th>Egress IP</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in response_data %}
+                                    <tr>
+                                    <td>{{ item.serial_number }}</td>
+                                    <td>{{ item.mac }}</td>
+                                    <td>{{ item.fw_info }}</td>
+                                    <td>{{ item.hw_name }}</td>
+                                    <td>{{ item.hw_version }}</td>
+                                    <td>{{ item.mgmt_ip }}</td>
+                                    <td>{{ item.egress_ip }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

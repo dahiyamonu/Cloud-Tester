@@ -1,0 +1,17 @@
+<fieldset style="border:none;">
+    {{original_widget}}
+    {% if empty %}
+        Nothing here.
+    {% else %}
+        <label for="{{select_all_id}}">
+            <input id="{{select_all_id}}" name="{{select_all_name}}" {% if all_selected %}checked="on"{% endif %} type="checkbox" class="checkall">Check all</input>
+        </label>
+    {% endif %}
+</fieldset>
+<script type="text/javascript">
+    (function($) {
+        $('#{{select_all_id}}').on('change',function(e){
+            $(this).closest('fieldset').find(':checkbox').prop('checked', $(this).prop("checked"));
+        });
+    })(django.jQuery);
+</script>

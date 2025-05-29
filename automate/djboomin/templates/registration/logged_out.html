@@ -1,0 +1,16 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block bread_crumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="{% url 'admin:index' %}"><i class="fa fa-dashboard"></i></a></li>
+        <li><a href="{% url 'admin:logout' %}"><i class="glyphicon glyphicon-log-out"></i> Logout</a></li>
+    </ul>
+{% endblock %}
+
+{% block content %}
+    <div class="box">
+        <p>{% trans "Thanks for spending some quality time with this website today." %}</p>
+        <a href="{% url 'admin:index' %}" class="btn btn-info">{% trans 'Log in again' %}</a>
+    </div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "admin/base.html" %}
+{% load i18n static djboomin %}
+
+{% block extrahead %}
+    <script src="{% static 'admin/js/jquery-throttle-debounce.js' %}"></script>
+{% endblock %}
+
+{% block extrajs %}
+    <script src="{% static 'admin/js/jquery.stickyheader.js' %}"></script>
+    <script src="{% static 'admin/js/table-sticky-header.js' %}"></script>
+{% endblock %}
+
+{% block title %}{{ title }} | Administration{% endblock %}
+
+{% block branding %}{{ site_header }}{% endblock %}
+
+{% block nav-global %}{% endblock %}

@@ -1,0 +1,126 @@
+{% load static app_list djboomin %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"en-gb" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+    <head>
+        <title>{% block title %}{% endblock %}</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha512-Dop/vW3iOtayerlYAqCgkVr2aTr2ErwwTYOvRFUpzl2VhCMJyjQF0Q9TjUXIo6JhuM/3i0vVEt2e/7QQmnHQqw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" />
+
+        <link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "admin/css/base.css" %}{% endblock %}?v=3">
+        <link rel="stylesheet" href="https://cdn.icomoon.io/92395/DJBoomin/style.css?z51os1">
+        <link rel="stylesheet" type="text/css" href="{% static "admin/js/chosen/chosen.min.css" %}">
+
+        {% block extrastyle %}{% endblock %}
+        {% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% block stylesheet_rtl %}{% static "admin/css/rtl.css" %}{% endblock %}">{% endif %}
+        <script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{% static "admin/" %}{% endfilter %}";</script>
+        <script type="text/javascript">window.__admin_utc_offset__ = "{% filter escapejs %}{% now "Z" %}{% endfilter %}";</script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js" integrity="sha512-DUC8yqWf7ez3JD1jszxCWSVB0DMP78eOyBpMa5aJki1bIRARykviOuImIczkxlj1KhVSyS16w2FSQetkD4UU2w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha512-oBTprMeNEKCnqfuqKd6sbvFzmFQtlXS3e0C/RGFV0hD6QzhHV+ODfaQbAlmY6/q0ubbwlAM/nCJjkrgA3waLzg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="{% static 'admin/js/chosen/chosen.jquery.min.js' %}"></script>
+
+        {% block extrahead %}{% endblock %}
+        <script src="{% static 'admin/js/inlines-boomin.js' %}"></script>
+
+        <script src="{% static 'admin/js/app.js' %}"></script>
+        {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE">{% endblock %}
+    </head>
+    {% load i18n %}
+
+    <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
+        {% if not is_popup %}
+            <div id="sidebar">
+                <div class="logo">
+                    <img src="{% static 'admin/images/logo.png' %}" />
+                </div>
+
+                <nav>
+                    <ul>
+                        <li>
+                            <a class="{% active request '^$' 'selected' %}" href="{% url 'admin:index' %}">
+                                <span class="fa fa-dashboard"></span> Dashboard
+                            </a>
+                        </li>
+
+                        {% get_app_list as nav_app_list %}
+                        {% for app in nav_app_list %}
+                            <li>
+                                {% if app.models|length > 1 %}
+                                    <a href="#" class="subnav-dropdown {% active request '^'|add:app.app_label %}" title="Models in the {{ app.app_label }} application"><i class="fa fa-chevron-right"></i> {{ app.name }}</a>
+
+                                    <ul class="subnav">
+                                        {% for model in app.models %}
+                                            {% if model.admin_url %}
+                                                <li><a class="{% active request '^'|add:app.app_label|add:"/"|add:model.model_label|add:"/" %}" href="{{ model.admin_url }}"><i class="fa fa-stop" style="color: #{{ model.model_color }}"></i> {{ model.name }} {% if model.count %}<span class="count">{{ model.count }}</span>{% endif %}</a></li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    {% with model=app.models.0 %}
+                                        {% if model.admin_url %}
+                                            <a class="{% active request '^'|add:app.app_label|add:"/"|add:model.model_label|add:"/" 'selected' %}" href="{{ model.admin_url }}"><i class="fa fa-stop" style="color: #{{ model.model_color }}"></i> {{ model.name }} {% if model.count %}<span class="count">{{ model.count }}</span>{% endif %}</a>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+
+        <div id="content">
+            {% if not is_popup %}
+                {% url 'django-admindocs-docroot' as docsroot %}
+                <section class="loginbar">
+                    Logged in as {% firstof user.get_long_name user.get_short_name user.get_username %}
+                    {% if docsroot %}
+                        <a href="{{ docsroot }}">{% trans 'Documentation' %}</a>
+                    {% endif %}
+                    {% if user.has_usable_password %}
+                        <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a>
+                    {% endif %}
+                    <a href="{% url 'admin:logout' %}"><span class="glyphicon glyphicon-log-out"></span> {% trans 'Log out' %}</a>
+                </section>
+            {% endif %}
+
+            {% block heading %}{% endblock %}
+
+            <section class="content">
+                {% block bread_crumbs %}
+                    <ul class="breadcrumbs">
+                        <li><a href="{% url 'admin:index' %}"><i class="fa fa-dashboard"></i></a></li>
+                    </ul>
+                {% endblock %}
+
+                {% block message %}
+                    <section class="messages">
+                        {% if messages %}
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <br />
+                                    {% for message in messages %}
+                                        <div class="alert alert-dismissable alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
+                                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                            {{ message|safe }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </section>
+                {% endblock %}
+
+                {% block pretitle %}{% endblock %}
+                {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
+                {% block content %}
+                    {% block object-tools %}{% endblock %}
+                    {{ content }}
+                {% endblock %}
+                {% block sidebar %}{% endblock %}
+            </section>
+        </div>
+
+        {% block extrajs %}{% endblock %}
+    </body>
+</html>

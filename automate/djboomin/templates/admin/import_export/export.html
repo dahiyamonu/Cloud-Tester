@@ -1,0 +1,45 @@
+{% extends "admin/import_export/base.html" %}
+{% load i18n %}
+{% load admin_urls static admin_modify %}
+{% load import_export_tags %}
+
+{% if not is_popup %}
+    {% block bread_crumbs %}
+        <ul class="breadcrumbs">
+            <li><a href="{% url 'admin:index' %}"><i class="fa fa-dashboard"></i></a></li>
+            <li><a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_label|capfirst|escape }}</a></li>
+            <li><a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a></li>
+            <li><a href="#">{% trans 'Export' %}</a></li>
+        </ul>
+    {% endblock %}
+{% endif %}
+
+{% block content %}
+<h1>{% trans "Export" %}</h1>
+
+<form action="" method="POST">
+  {% csrf_token %}
+
+    <div class="box">
+      {% for field in form %}
+        <div class="form-group">
+          {{ field.errors }}
+
+          {{ field.label_tag }}
+
+          {{ field }}
+
+          {% if field.field.help_text %}
+          <p class="help">{{ field.field.help_text|safe }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="text-right">
+        <div class="submit-row btn-group-vertical btn-group-lg">
+            <input type="submit" class="default btn btn-success" value="{% trans "Submit" %}">
+        </div>
+    </div>
+</form>
+{% endblock %}

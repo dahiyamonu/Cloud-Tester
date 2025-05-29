@@ -1,0 +1,89 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static djboomin %}
+
+{% block bread_crumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="{% url 'admin:index' %}"><i class="fa fa-dashboard"></i></a></li>
+    </ul>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        {% if app_list %}
+            <div class="col-xs-12 col-md-8">
+                {% for app in app_list %}
+                    <div class="box">
+                        <h4>{{ app.name|remscores }}</h4>
+                        <table class="table table-striped table-rows">
+                            {% for model in app.models %}
+                                <tr>
+                                    <td class="col-xs-8">
+                                        {% if model.admin_url %}
+                                            <a href="{{ model.admin_url }}">{{ model.name }}</a>
+                                        {% else %}
+                                            {{ model.name }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="col-xs-4 text-right">
+                                        {% if model.add_url %}
+                                            <a href="{{ model.add_url }}" class="btn btn-success btn-xs"><i class="fa fa-plus"></i> {% trans 'Add' %}</a>
+                                        {% endif %}
+
+                                        {% if model.admin_url %}
+                                            <a href="{{ model.admin_url }}" class="btn btn-info btn-xs"><i class="fa fa-wrench"></i> {% trans 'Change' %}</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="col-xs-12 col-md-8">
+                <div class="box">
+                    <div class="alert alert-warning">{% trans "You don't have permission to edit anything." %}</div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="col-xs-12 col-md-4">
+            <div class="box">
+                <h4>{% trans 'My Recent Actions' %}</h4>
+                {% load log %}
+                {% get_admin_log 10 as admin_log for_user user %}
+                {% if not admin_log %}
+                    <div class="alert alert-warning">{% trans 'None available' %}</div>
+                {% else %}
+                    <table class="table table-striped table-rows">
+                        {% for entry in admin_log %}
+                            <tr>
+                                <td>
+                                    {% if entry.is_addition %}
+                                        <i class="fa fa-plus"></i> Added
+                                    {% elif entry.is_change %}
+                                        <i class="fa fa-wrench"></i> Changed
+                                    {% elif entry.is_deletion %}
+                                        <i class="fa fa-trash"></i> Deleted
+                                    {% endif %}
+
+                                    {% if entry.is_deletion or not entry.get_admin_url %}
+                                        {{ entry.object_repr }}
+                                    {% else %}
+                                        <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                                    {% endif %}
+                                    <br/>
+                                    {% if entry.content_type %}
+                                        <span class="mini quiet">{% filter capfirst %}{% trans entry.content_type.name %}{% endfilter %}</span>
+                                    {% else %}
+                                        <span class="mini quiet">{% trans 'Unknown content' %}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

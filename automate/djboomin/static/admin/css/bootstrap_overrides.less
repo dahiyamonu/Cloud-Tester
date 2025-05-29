@@ -1,0 +1,68 @@
+.checkbox input[type=checkbox], .checkbox-inline input[type=checkbox], .radio input[type=radio], .radio-inline input[type=radio] {
+	margin-left: 0;
+}
+
+.btn {
+	-webkit-transition: all 0.05s ease-in-out;
+	-moz-transition: all 0.05s ease-in-out;
+	-o-transition: all 0.05s ease-in-out;
+	transition: all 0.05s ease-in-out;
+
+	&.btn-success {
+		background: @main_color;
+		border: 1px solid @main_color;
+
+		&:hover {
+			background: #1AAB8E;
+			border: 1px solid #1AAB8E;
+		}
+	}
+
+	&.btn-primary {
+		background: #5C37BD;
+		border: 1px solid #5C37BD;
+
+		&:hover {
+			background: #4F2EA5;
+			border: 1px solid #4F2EA5;
+		}
+	}
+
+	&.btn-info {
+		background: #00B4DA;
+		border: 1px solid #00B4DA;
+
+		&:hover {
+			background: #08A1C1;
+			border: 1px solid #08A1C1;
+		}
+	}
+}
+
+table.table {
+	border-collapse: separate;
+	border-spacing: 0 3px;
+
+	thead {
+		th {
+			border: 0;
+			background: @main_color;
+			color: #fff;
+			text-transform: uppercase;
+
+			a {
+				color: #fff;
+				text-decoration: none;
+			}
+		}
+	}
+
+	tbody td, tbody th {
+		border: 0;
+		background: #FBFBFB;
+
+		&.action-checkbox {
+			width: 30px;
+		}
+	}
+}
