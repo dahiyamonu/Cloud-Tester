@@ -5,7 +5,6 @@ import random
 import string
 from .models import Device
 import openpyxl
-from openpyxl.utils import get_column_letter
 import os
 from django.conf import settings
 
@@ -39,30 +38,31 @@ def generate_dummy_data(request):
         Device.objects.create(**record)
         data.append(record)
 
-
-
-    # Write to Excel
+    # Create Excel workbook
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Dummy Data"
 
+    # Write headers
     headers = list(data[0].keys())
     ws.append(headers)
 
+    # Write data rows
     for record in data:
         ws.append(list(record.values()))
 
-    # Inside generate_dummy_data
+    # Save Excel file in media directory
     excel_filename = "dummy_data.xlsx"
     media_dir = settings.MEDIA_ROOT
-
-    # ✅ Create media directory if it doesn't exist
     os.makedirs(media_dir, exist_ok=True)
 
-    file_path = os.path.join(settings.MEDIA_ROOT, excel_filename)
+    file_path = os.path.join(media_dir, excel_filename)
     wb.save(file_path)
+
+    # Build download link
+    download_link = settings.MEDIA_URL + excel_filename
 
     return render(request, 'data.html', {
         'data': data,
-        'download_link': os.path.join(settings.MEDIA_URL, excel_filename)
+        'download_link': download_link
     })

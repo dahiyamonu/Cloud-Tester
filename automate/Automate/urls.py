@@ -3,6 +3,8 @@ from django.urls import path, include
 from .views import home
 from dummy.views import generate_dummy_data
 from imp_exp.views import import_devices, export_devices
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -11,3 +13,5 @@ urlpatterns = [
     path('api/', include('dummy.urls')),
     path('cloud/', include('cloud.urls'))
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
