@@ -20,7 +20,7 @@ def generate_ip():
     return f"{random.randint(1, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(1, 255)}"
 
 def generate_dummy_data(request):
-    num_records = int(request.GET.get('num', 100))
+    num_records = int(request.GET.get('num', 50))
     data = []
 
     for _ in range(num_records):
