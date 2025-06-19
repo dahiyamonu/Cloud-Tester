@@ -1,6 +1,8 @@
 import time
 from typing import List
 from dataclasses import dataclass, field
+import json
+from dataclasses import asdict
 
 @dataclass
 class MemoryUtilization:
@@ -163,3 +165,11 @@ if __name__ == "__main__":
     
     # Print detailed report
     print_device_report_detailed(device_data)
+    
+    print("\n" + "="*50 + "\n")
+    
+    
+    # Convert to JSON and print
+    device_data_json = json.dumps(asdict(device_data), indent=4)
+    print("Device Report in JSON format:")
+    print(device_data_json)

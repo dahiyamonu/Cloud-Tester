@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Import WiFi Clients</title>
+    <style>
+        body { font-family: monospace; padding: 2em; }
+        .json-box { white-space: pre-wrap; background: #f9f9f9; padding: 1em; border: 1px solid #ccc; border-radius: 6px; }
+        button { padding: 0.6em 1.2em; margin-top: 1em; }
+    </style>
+</head>
+<body>
+    <h1>WiFi Client Report (JSON)</h1>
+
+    <form method="get">
+        <button type="submit">Generate Client Report</button>
+    </form>
+
+    <div class="json-box" id="jsonDisplay">{{ client_json }}</div>
+
+    <button onclick="downloadJson()">Download JSON</button>
+
+    <script>
+        function downloadJson() {
+            const data = `{{ client_json|escapejs }}`;
+            const blob = new Blob([data], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "client_report.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

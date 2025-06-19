@@ -2,6 +2,8 @@ import time
 from typing import List
 from dataclasses import dataclass, field
 from enum import IntEnum
+import json
+from dataclasses import asdict
 
 # Constants
 MAX_CLIENTS = 50
@@ -224,5 +226,13 @@ if __name__ == "__main__":
     
     print("\n" + "="*60 + "\n")
     
+    # Print first 10 clients
     print_client_report(client_data)
+
+    print("\n" + "="*60 + "\n")
     
+    
+    # Convert to JSON and print
+    client_data_json = json.dumps(asdict(client_data), indent=4)
+    print("Client Report in JSON format:")
+    print(client_data_json)

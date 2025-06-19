@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WiFi Report Import</title>
+    <style>
+        body { font-family: monospace; padding: 2em; background: #fafafa; }
+        .section { margin-bottom: 2em; }
+        .json-box {
+            white-space: pre-wrap;
+            background: #f0f0f0;
+            padding: 1em;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        button {
+            padding: 0.6em 1.2em;
+            margin-top: 1em;
+            font-size: 1em;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>WiFi Client & VIF Report</h1>
+
+    <div class="section">
+        <h2>Client Report</h2>
+        <div class="json-box" id="clientJson">{{ client_json }}</div>
+        <button onclick="downloadJson('client')">Download Client JSON</button>
+    </div>
+
+    <div class="section">
+        <h2>VIF + Radio Report</h2>
+        <div class="json-box" id="vifJson">{{ vif_json }}</div>
+        <button onclick="downloadJson('vif')">Download VIF JSON</button>
+    </div>
+
+    <script>
+        function downloadJson(type) {
+            let data = type === 'client' ? `{{ client_json|escapejs }}` : `{{ vif_json|escapejs }}`;
+            let filename = type === 'client' ? "client_report.json" : "vif_report.json";
+            const blob = new Blob([data], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+
+</body>
+</html>

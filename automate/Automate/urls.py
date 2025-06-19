@@ -11,7 +11,8 @@ urlpatterns = [
     path("", home, name='home'),
     path('imp_exp/', include('imp_exp.urls')),  # Added missing trailing slash
     path('api/', include('dummy.urls')),
-    path('cloud/', include('cloud.urls'))
+    path('cloud/', include('cloud.urls')),
+    path('mqbroker/', include('mqbroker.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Import Devices Report</title>
+    <style>
+        body { font-family: monospace; padding: 2em; }
+        .json-output { white-space: pre-wrap; background-color: #f4f4f4; padding: 1em; border-radius: 8px; }
+        button { margin: 1em 0; padding: 0.6em 1em; font-size: 1em; }
+    </style>
+</head>
+<body>
+    <h1>Device Report (JSON)</h1>
+
+    <form method="get">
+        <button type="submit">Generate Device Report</button>
+    </form>
+
+    <div class="json-output" id="jsonDisplay">
+        {{ device_json }}
+    </div>
+
+    <button onclick="downloadJson()">Download JSON</button>
+
+    <script>
+        function downloadJson() {
+            const jsonData = `{{ device_json|escapejs }}`;
+            const blob = new Blob([jsonData], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "device_report.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

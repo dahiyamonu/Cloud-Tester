@@ -1,6 +1,8 @@
 import random
 from typing import List, Dict, Any
 from dataclasses import dataclass
+import json
+from dataclasses import asdict
 
 # Constants (you may need to adjust these based on your actual constants)
 MAX_CLIENTS = 50
@@ -160,3 +162,14 @@ if __name__ == "__main__":
     print("\n=== VIF Report Data ===")
     vif_data = dummy_get_vif_report_data()
     print_vif_report(vif_data)
+
+
+    # json format
+
+    print("\n=== Client Report in JSON Format ===")
+    client_json = json.dumps(asdict(client_data), indent=4)
+    print(client_json)
+    
+    print("\n=== VIF Report in JSON Format ===")
+    vif_json = json.dumps(asdict(vif_data), indent=4)
+    print(vif_json)
