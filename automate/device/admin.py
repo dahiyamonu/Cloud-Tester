@@ -1,12 +1,12 @@
 import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from django.contrib import admin, messages
 from import_export.admin import ImportExportModelAdmin
 
 from device.utils import generate_ip, generate_mac
 from .models import Device 
 from .resources import DeviceResource
-# Register your models here.
-
 
 @admin.register(Device)
 class DeviceAdmin(ImportExportModelAdmin):
@@ -23,12 +23,12 @@ class DeviceAdmin(ImportExportModelAdmin):
         'egress_ip',
     )
     actions = ['register_selected_devices']
+
     @admin.action(description="Register selected devices to cloud")
     def register_selected_devices(self, request, queryset):
-        for device in queryset:
+        def register_device(device):
             if not device.serial_number:
-                messages.warning(request, f"Device {device.id} skipped: No serial number.")
-                continue
+                return (f"Device {device.id}", "warning", "Skipped: No serial number.")
 
             payload = {
                 "serial_number": device.serial_number,
@@ -48,7 +48,6 @@ class DeviceAdmin(ImportExportModelAdmin):
                 )
                 if response.status_code == 200:
                     data = response.json()
-                    print("Device registered successfully",  data['deviceId'])
                     device.mac = payload["mac"]
                     device.fw_info = payload["fw_info"]
                     device.hw_name = payload["hw_name"]
@@ -63,3 +62,9 @@ class DeviceAdmin(ImportExportModelAdmin):
                     messages.error(request, f"Failed to register {device.serial_number}: {response.status_code}")
             except Exception as e:
                 messages.error(request, f"Error for {device.serial_number}: {str(e)}")
+
+        # Run registration in parallel
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = [executor.submit(register_device, device) for device in queryset]
+            for future in as_completed(futures):
+                future.result()
