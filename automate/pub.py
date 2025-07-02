@@ -2,32 +2,51 @@
 import paho.mqtt.client as mqtt
 import json
 from dataclasses import asdict
+import random
 
 # Dummy data generators
 from mqbroker.device_report_data import fill_dummy_device_report
 from mqbroker.client_report_data import ioctl80211_jedi_client_fetch_dummy
 from mqbroker.vif_report_data import dummy_get_vif_report_data
 
+
+# === Generate dynamic identifiers ===
+def generate_device_id():
+    return str(random.randint(1000000000, 9999999999))
+
+def generate_serial_number():
+    mac = ''.join(random.choices("0123456789ABCDEF", k=12))
+    return f"AIR{mac}"
+
+# === Assign dynamic values ===
+dynamic_device_id = generate_device_id()
+dynamic_serial_num = generate_serial_number()
+mac_addr = dynamic_serial_num[-12:]  # last 12 characters
+
+# === Construct topics dynamically ===
+def construct_topic(base, device_id, serial):
+    return f"{base}/{device_id}/{serial}"
+
 # Device config and MQTT topic strings
 device_data = {
-    "deviceId": "5006945829",
-    "serialNumber": "AIRIP3BR53TL2IS",
+    "deviceId": dynamic_device_id,
+    "serialNumber": dynamic_serial_num,
     "username": "b2d04e02e675418abf691db817fb4c3a",
     "password": "7d4fed9e6b1f3ec47a68f2b3057a8302b7e1f4ce4a9575ffc71149d87e8debafb3c125053338b94067501d73eae7d2bf",
     "broker": "69.30.254.180",
     "port": "35930",
     "statsTopic": {
-        "device": "dev/to/cloud/5006945829/AIRIP3BR53TL2IS/device",
-        "client": "dev/to/cloud/5006945829/AIRIP3BR53TL2IS/client",
-        "vif": "dev/to/cloud/5006945829/AIRIP3BR53TL2IS/vif",
-        "neighbor": "dev/to/cloud/5006945829/AIRIP3BR53TL2IS/neighbor",
-        "config": "dev/to/cloud/5006945829/AIRIP3BR53TL2IS/config",
-        "cmdr": "dev/to/cloud/5006945829/AIRIP3BR53TL2IS/cmdr"
+        "device": construct_topic("dev/to/cloud", dynamic_device_id, dynamic_serial_num) + "/device",
+        "client": construct_topic("dev/to/cloud", dynamic_device_id, dynamic_serial_num) + "/client",
+        "vif": construct_topic("dev/to/cloud", dynamic_device_id, dynamic_serial_num) + "/vif",
+        "neighbor": construct_topic("dev/to/cloud", dynamic_device_id, dynamic_serial_num) + "/neighbor",
+        "config": construct_topic("dev/to/cloud", dynamic_device_id, dynamic_serial_num) + "/config",
+        "cmdr": construct_topic("dev/to/cloud", dynamic_device_id, dynamic_serial_num) + "/cmdr"
     },
     "payload":{
         "device": {
-            "serialNum": "AIR587BE92472BD",
-            "deviceId": "1457309733",
+            "serialNum": dynamic_serial_num,
+            "deviceId": dynamic_device_id,
             "macAddr": "587BE92472BD",
             "tms": 1750756430541,
             "data": {
@@ -63,8 +82,8 @@ device_data = {
                 }
         },
         "client": {
-            "serialNum": "AIR587BE92472BD",
-            "deviceId": "1457309733",
+            "serialNum": dynamic_serial_num,
+            "deviceId": dynamic_device_id,
             "macAddr": "587BE92472BD",
             "tms": 1750749446732,
             "data": [
@@ -86,8 +105,8 @@ device_data = {
             ]
         },    
         "vif": {
-            "serialNum": "AIR587BE92472BD",
-            "deviceId": "1457309733",
+            "serialNum": dynamic_serial_num,
+            "deviceId": dynamic_device_id,
             "macAddr": "587BE92472BD",
             "tms": 1750756430703,
             "data": {
