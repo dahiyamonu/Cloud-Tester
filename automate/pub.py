@@ -1,54 +1,46 @@
-
 import paho.mqtt.client as mqtt
 import json
-from dataclasses import asdict
-import random
+import pandas as pd
+from datetime import datetime, timezone
 
-# Dummy data generators
-from mqbroker.device_report_data import fill_dummy_device_report
-from mqbroker.client_report_data import ioctl80211_jedi_client_fetch_dummy
-from mqbroker.vif_report_data import dummy_get_vif_report_data
+# ========= Load Devices from Excel =========
+EXCEL_PATH = "Device.xlsx"
 
+def load_devices_from_excel(file_path):
+    df = pd.read_excel(file_path)
+    devices = df[["deviceId", "serialNumber"]].dropna().to_dict(orient="records")
+    return devices
 
-# === Generate dynamic identifiers ===
-def generate_device_id():
-    return str(random.randint(1000000000, 9999999999))
+# ========= MQTT Broker Config =========
+BROKER = "69.30.254.180"
+PORT = 35930
+CLIENT_ID = "publisher-client"
+USER_NAME = "bluesyobsignates"
+PASSWORD = "PNJxhzMX2jkRVBG3"
 
-def generate_serial_number():
-    mac = ''.join(random.choices("0123456789ABCDEF", k=12))
-    return f"AIR{mac}"
+# ========= MQTT Event Handlers =========
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("✅ Connected to MQTT broker.")
+    else:
+        print(f"❌ Failed to connect, return code {rc}")
 
-# === Assign dynamic values ===
-dynamic_device_id = generate_device_id()
-dynamic_serial_num = generate_serial_number()
-mac_addr = dynamic_serial_num[-12:]  # last 12 characters
+# ========= Payload Generator =========
+def generate_device_data(device_id, serial_number):
+    timestamp = int(datetime.now(timezone.utc).timestamp() * 1000)
+    mac = "587BE92472BD"  # Can be randomized if needed
 
-# === Construct topics dynamically ===
-def construct_topic(base, device_id, serial):
-    return f"{base}/{device_id}/{serial}"
+    stats_topic = {
+        key: f"dev/to/cloud/{device_id}/{serial_number}/{key}"
+        for key in ["device", "client", "vif", "neighbor", "config", "cmdr"]
+    }
 
-# Device config and MQTT topic strings
-device_data = {
-    "deviceId": dynamic_device_id,
-    "serialNumber": dynamic_serial_num,
-    "username": "b2d04e02e675418abf691db817fb4c3a",
-    "password": "7d4fed9e6b1f3ec47a68f2b3057a8302b7e1f4ce4a9575ffc71149d87e8debafb3c125053338b94067501d73eae7d2bf",
-    "broker": "69.30.254.180",
-    "port": "35930",
-    "statsTopic": {
-        "device": construct_topic("dev/to/cloud", dynamic_device_id, dynamic_serial_num) + "/device",
-        "client": construct_topic("dev/to/cloud", dynamic_device_id, dynamic_serial_num) + "/client",
-        "vif": construct_topic("dev/to/cloud", dynamic_device_id, dynamic_serial_num) + "/vif",
-        "neighbor": construct_topic("dev/to/cloud", dynamic_device_id, dynamic_serial_num) + "/neighbor",
-        "config": construct_topic("dev/to/cloud", dynamic_device_id, dynamic_serial_num) + "/config",
-        "cmdr": construct_topic("dev/to/cloud", dynamic_device_id, dynamic_serial_num) + "/cmdr"
-    },
-    "payload":{
+    payload = {
         "device": {
-            "serialNum": dynamic_serial_num,
-            "deviceId": dynamic_device_id,
-            "macAddr": "587BE92472BD",
-            "tms": 1750756430541,
+            "serialNumber": serial_number,
+            "deviceId": device_id,
+            "macAddr": mac,
+            "tms": timestamp,
             "data": {
                 "system": {
                     "uptime": 383,
@@ -65,152 +57,85 @@ device_data = {
                     "swapUsed": 0
                 },
                 "fsUtil": [
-                    {
-                    "fsType": "FS_TYPE_ROOTFS",
-                    "fsTotal": 3136,
-                    "fsUsed": 384
-                    },
-                    {
-                    "fsType": "FS_TYPE_TMPFS",
-                    "fsTotal": 124296,
-                    "fsUsed": 412
-                    }
-                    ],
-                    "cpuUtil": {
-                        "cpuUtil": 1
-                    }
-                }
-        },
-        "client": {
-            "serialNum": dynamic_serial_num,
-            "deviceId": dynamic_device_id,
-            "macAddr": "587BE92472BD",
-            "tms": 1750749446732,
-            "data": [
-                {
-                "macAddress": "54:AF:97:6A:14:23",
-                "hostname": "auditor",
-                "ipAddress": "192.168.12.101",
-                "ssid": "air-net-20",
-                        "isConnected": 0,
-                        "durationMs": 6104000,
-                        "channel": 48,
-                        "band": "BAND5G",
-                        "stats": {
-                            "rxBytes": 1251126,
-                            "txBytes": 249729,
-                            "rssi": -48
-                        }
-                }
-            ]
-        },    
-        "vif": {
-            "serialNum": dynamic_serial_num,
-            "deviceId": dynamic_device_id,
-            "macAddr": "587BE92472BD",
-            "tms": 1750756430703,
-            "data": {
-                "radio": [
-                    {
-                    "band": "BAND2G",
-                    "channel": 3,
-                    "txpower": 35,
-                    "channel_utilization": 28
-                    },
-                    {
-                    "band": "BAND5G",
-                    "channel": 48,
-                    "txpower": 85,
-                    "channel_utilization": 15
-                    }
-                ],    
-                "vif": [
-                    {
-                    "radio": "BAND5G",
-                    "ssid": "pro-net-20",
-                    "statNumSta": 0,
-                    "statUplinkMb": 0,
-                    "statDownlinkMb": 0
-                    },
-                    {
-                    "radio": "BAND5G",
-                    "ssid": "air-net-20",
-                    "statNumSta": 0,
-                    "statUplinkMb": 0,
-                    "statDownlinkMb": 0
-                    },
-                    {
-                    "radio": "BAND2G",
-                    "ssid": "pro-net-20",
-                    "statNumSta": 0,
-                    "statUplinkMb": 0,
-                    "statDownlinkMb": 0
-                    },
-                    {
-                    "radio": "BAND2G",
-                    "ssid": "air-net-20",
-                    "statNumSta": 0,
-                    "statUplinkMb": 0,
-                    "statDownlinkMb": 0
-                    }
-                ]
+                    {"fsType": "FS_TYPE_ROOTFS", "fsTotal": 3136, "fsUsed": 384},
+                    {"fsType": "FS_TYPE_TMPFS", "fsTotal": 124296, "fsUsed": 412}
+                ],
+                "cpuUtil": {"cpuUtil": 1}
             }
         },
-    } 
-}
+        "client": {
+            "serialNumber": serial_number,
+            "deviceId": device_id,
+            "macAddr": mac,
+            "tms": timestamp,
+            "data": [
+                {
+                    "macAddress": "54:AF:97:6A:14:23",
+                    "hostname": "auditor",
+                    "ipAddress": "192.168.12.101",
+                    "ssid": "air-net-20",
+                    "isConnected": 0,
+                    "durationMs": 6104000,
+                    "channel": 48,
+                    "band": "BAND5G",
+                    "stats": {
+                        "rxBytes": 1251126,
+                        "txBytes": 249729,
+                        "rssi": -48
+                    }
+                }
+            ]
+        },
+        "vif": {
+            "serialNumber": serial_number,
+            "deviceId": device_id,
+            "macAddr": mac,
+            "tms": timestamp,
+            "data": {
+                "radio": [
+                    {"band": "BAND2G", "channel": 3, "txpower": 35, "channel_utilization": 28},
+                    {"band": "BAND5G", "channel": 48, "txpower": 85, "channel_utilization": 15}
+                ],
+                "vif": [
+                    {"radio": "BAND5G", "ssid": "pro-net-20", "statNumSta": 0, "statUplinkMb": 0, "statDownlinkMb": 0},
+                    {"radio": "BAND5G", "ssid": "air-net-20", "statNumSta": 0, "statUplinkMb": 0, "statDownlinkMb": 0},
+                    {"radio": "BAND2G", "ssid": "pro-net-20", "statNumSta": 0, "statUplinkMb": 0, "statDownlinkMb": 0},
+                    {"radio": "BAND2G", "ssid": "air-net-20", "statNumSta": 0, "statUplinkMb": 0, "statDownlinkMb": 0}
+                ]
+            }
+        }
+    }
 
-BROKER = device_data["broker"]
-PORT = int(device_data["port"])
-CLIENT_ID = "publisher-client"
-USER_NAME = "bluesyobsignates"
-PASSWORD = "PNJxhzMX2jkRVBG3"
+    return stats_topic, payload
 
-def on_connect(client, userdata, flags, rc):
-    if rc == 0:
-        print("✅ Connected to MQTT broker.")
-    else:
-        print(f"❌ Failed to connect, return code {rc}")
-
-# Setup MQTT client
+# ========= MQTT Client Setup =========
 client = mqtt.Client(CLIENT_ID)
 client.username_pw_set(USER_NAME, PASSWORD)
 client.on_connect = on_connect
-
 client.connect(BROKER, PORT, 60)
 client.loop_start()
 
-# === Publish device data ===
-device_report = fill_dummy_device_report()
-device_topic = device_data["statsTopic"]["device"]
-device_payload = json.dumps(device_data["payload"]["device"])
+# ========= Publish Data for All Devices =========
+devices = load_devices_from_excel(EXCEL_PATH)
 
-result = client.publish(device_topic, device_payload, qos=2)
-if result.rc == mqtt.MQTT_ERR_SUCCESS:
-    print(f"✅ Sent device report to `{device_topic}`")
-else:
-    print(f"❌ Failed to publish to `{device_topic}`")
+for device in devices:
+    device_id = str(device["deviceId"])
+    serial_number = str(device["serialNumber"])
 
-# === Publish client data ===
-client_report = ioctl80211_jedi_client_fetch_dummy()
-client_topic = device_data["statsTopic"]["client"]
-client_payload = json.dumps(device_data["payload"]["client"])
+    topics, payload = generate_device_data(device_id, serial_number)
 
-result = client.publish(client_topic, client_payload, qos=2)
-if result.rc == mqtt.MQTT_ERR_SUCCESS:
-    print(f"✅ Sent client report to `{client_topic}`")
-else:
-    print(f"❌ Failed to publish to `{client_topic}`")
+    print(f"\n📡 Publishing for Device ID: {device_id}, SN: {serial_number}")
+    for key in ["device", "client", "vif"]:
+        topic = topics[key]
+        message = json.dumps(payload[key])
+        result = client.publish(topic, message, qos=2)
 
-# === Publish VIF data ===
-vif_report = dummy_get_vif_report_data()
-vif_topic = device_data["statsTopic"]["vif"]
-vif_payload = json.dumps(device_data["payload"]["vif"])
+        if result.rc == mqtt.MQTT_ERR_SUCCESS:
+            print(f"✅ Sent `{key}` report to `{topic}`")
+        else:
+            print(f"❌ Failed to publish `{key}` report to `{topic}`")
 
-result = client.publish(vif_topic, vif_payload, qos=2)
-if result.rc == mqtt.MQTT_ERR_SUCCESS:
-    print(f"✅ Sent VIF report to `{vif_topic}`")
-else:
-    print(f"❌ Failed to publish to `{vif_topic}`")
-
+# ========= Cleanup =========
 client.loop_stop()
 client.disconnect()
+print("\n🚀 All data published. Disconnected from broker.")
