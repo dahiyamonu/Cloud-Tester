@@ -2,6 +2,7 @@ import paho.mqtt.client as mqtt
 import json
 import pandas as pd
 from datetime import datetime, timezone
+import random
 
 # ========= Load Devices from Excel =========
 EXCEL_PATH = "Device.xlsx"
@@ -25,10 +26,23 @@ def on_connect(client, userdata, flags, rc):
     else:
         print(f"❌ Failed to connect, return code {rc}")
 
+# ========= MAC and IP Generators =========
+def random_mac():
+    return ":".join(f"{random.randint(0x00, 0xFF):02X}" for _ in range(6))
+
+def random_ip():
+    return f"192.168.{random.randint(0, 255)}.{random.randint(1, 254)}"
+
+def random_hostname():
+    return random.choice(["router", "sensor", "gateway", "auditor", "iot-device"])
+
+def random_ssid():
+    return random.choice(["air-net-20", "pro-net-20", "iot-net", "test-net"])
+
 # ========= Payload Generator =========
 def generate_device_data(device_id, serial_number):
     timestamp = int(datetime.now(timezone.utc).timestamp() * 1000)
-    mac = "587BE92472BD"  # Can be randomized if needed
+    mac = random_mac()
 
     stats_topic = {
         key: f"dev/to/cloud/{device_id}/{serial_number}/{key}"
@@ -43,24 +57,24 @@ def generate_device_data(device_id, serial_number):
             "tms": timestamp,
             "data": {
                 "system": {
-                    "uptime": 383,
-                    "downtime": 0,
-                    "totalClient": 0,
-                    "uplinkMb": 0,
-                    "downlinkMb": 0,
-                    "totalTrafficMb": 0
+                    "uptime": random.randint(100, 10000),
+                    "downtime": random.randint(0, 500),
+                    "totalClient": random.randint(0, 10),
+                    "uplinkMb": random.randint(0, 50),
+                    "downlinkMb": random.randint(0, 50),
+                    "totalTrafficMb": random.randint(0, 100)
                 },
                 "memUtil": {
                     "memTotal": 248592,
-                    "memUsed": 99836,
+                    "memUsed": random.randint(50000, 248592),
                     "swapTotal": 0,
                     "swapUsed": 0
                 },
                 "fsUtil": [
-                    {"fsType": "FS_TYPE_ROOTFS", "fsTotal": 3136, "fsUsed": 384},
-                    {"fsType": "FS_TYPE_TMPFS", "fsTotal": 124296, "fsUsed": 412}
+                    {"fsType": "FS_TYPE_ROOTFS", "fsTotal": 3136, "fsUsed": random.randint(200, 3136)},
+                    {"fsType": "FS_TYPE_TMPFS", "fsTotal": 124296, "fsUsed": random.randint(100, 124296)}
                 ],
-                "cpuUtil": {"cpuUtil": 1}
+                "cpuUtil": {"cpuUtil": random.randint(1, 90)}
             }
         },
         "client": {
@@ -70,18 +84,18 @@ def generate_device_data(device_id, serial_number):
             "tms": timestamp,
             "data": [
                 {
-                    "macAddress": "54:AF:97:6A:14:23",
-                    "hostname": "auditor",
-                    "ipAddress": "192.168.12.101",
-                    "ssid": "air-net-20",
-                    "isConnected": 0,
-                    "durationMs": 6104000,
-                    "channel": 48,
-                    "band": "BAND5G",
+                    "macAddress": random_mac(),
+                    "hostname": random_hostname(),
+                    "ipAddress": random_ip(),
+                    "ssid": random_ssid(),
+                    "isConnected": random.choice([0, 1]),
+                    "durationMs": random.randint(10000, 10000000),
+                    "channel": random.choice([1, 6, 11, 36, 48]),
+                    "band": random.choice(["BAND2G", "BAND5G"]),
                     "stats": {
-                        "rxBytes": 1251126,
-                        "txBytes": 249729,
-                        "rssi": -48
+                        "rxBytes": random.randint(1000, 1000000),
+                        "txBytes": random.randint(1000, 1000000),
+                        "rssi": random.randint(-80, -30)
                     }
                 }
             ]
@@ -93,8 +107,8 @@ def generate_device_data(device_id, serial_number):
             "tms": timestamp,
             "data": {
                 "radio": [
-                    {"band": "BAND2G", "channel": 3, "txpower": 35, "channel_utilization": 28},
-                    {"band": "BAND5G", "channel": 48, "txpower": 85, "channel_utilization": 15}
+                    {"band": "BAND2G", "channel": 3, "txpower": random.randint(10, 100), "channel_utilization": random.randint(5, 80)},
+                    {"band": "BAND5G", "channel": 48, "txpower": random.randint(10, 100), "channel_utilization": random.randint(5, 80)}
                 ],
                 "vif": [
                     {"radio": "BAND5G", "ssid": "pro-net-20", "statNumSta": 0, "statUplinkMb": 0, "statDownlinkMb": 0},
